@@ -1,0 +1,11 @@
+version: '2.4'
+
+services:
+  postgres:
+    image: postgres:latest
+    volumes:
+      - ./data:/var/lib/postgresql/data:rw
+  test:
+    image: postgres:latest
+    volumes:
+      - ./test-data:/var/lib/postgresql/data:rw

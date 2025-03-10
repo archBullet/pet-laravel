@@ -1,0 +1,34 @@
+version: '2.4'
+
+services:
+  php:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    user: 1000:1000
+    expose:
+      - 9000
+    environment:
+      XDEBUG_CONFIG: "remote_host=${XDEBUG_HOST:-host.docker.internal} remote_port=${XDEBUG_PORT:-9100} remote_enable=1 idekey=${XDEBUG_IDEKEY:-PHPSTORM}"
+
+  cron:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: cron && tail -f /var/log/cron.log
+    user: 1000:1000
+
+  composer:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: composer install
+    user: 1000:1000
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: php artisan queue:work
+    user: 1000:1000

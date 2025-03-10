@@ -1,0 +1,70 @@
+services:
+  caddy:
+    extends:
+      file: .docker/caddy/caddy-compose.yml
+      service: caddy
+    depends_on:
+      - fpm
+    links:
+      - fpm:php
+    volumes:
+      - .:/app
+    ports:
+      - 80:80
+
+  fpm:
+    extends:
+      file: .docker/php/php-compose.yml
+      service: php
+    restart: unless-stopped
+    depends_on:
+      - db
+    volumes:
+      - .:/app
+    environment:
+      - XDEBUG_PORT=9103
+    user: 1000:1000
+
+  queue:
+    extends:
+      file: .docker/php/php-compose.yml
+      service: php
+    restart: unless-stopped
+    command: php artisan queue:work --tries=3
+    user: 1000:1000
+    depends_on:
+      - db
+    volumes:
+      - .:/app
+
+  composer:
+    extends:
+      file: .docker/php/php-compose.yml
+      service: composer
+    depends_on:
+      - db
+    volumes:
+      - .:/app
+    user: 1000:1000
+
+  db:
+    extends:
+      file: .docker/postgres/postgres-compose.yml
+      service: postgres
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=${DB_USERNAME}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_DATABASE}
+    ports:
+      - ${POSTGRES_PORT}:5432
+
+  testdb:
+    extends:
+      file: .docker/postgres/postgres-compose.yml
+      service: test
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=${DB_USERNAME}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_DATABASE}

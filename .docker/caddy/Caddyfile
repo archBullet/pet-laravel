@@ -1,0 +1,9 @@
+{
+    auto_https off
+}
+
+http://localhost, localhost:80 {
+    root * /app/public
+    php_fastcgi fpm:9000
+    file_server
+}
